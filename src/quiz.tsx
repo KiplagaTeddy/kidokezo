@@ -3,10 +3,10 @@ import type { Question } from "./lesson"
 
 type Props = {
   questions: Question[]
+  onFinish: (score: number) => void
 }
 
-function Quiz({ questions }: Props) {
-  const [q, setQ] = useState(0)
+function Quiz({ questions, onFinish }: Props) {  const [q, setQ] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
   const [checked, setChecked] = useState(false)
   const [score, setScore] = useState(0)
@@ -44,10 +44,11 @@ function Quiz({ questions }: Props) {
   }
 
   function nextQuestion() {
-    setQ(q + 1)
-    setSelected(null)
-    setChecked(false)
-  }
+  if (q === questions.length - 1) onFinish(score)
+  setQ(q + 1)
+  setSelected(null)
+  setChecked(false)
+}
 
   return (
     <section className="quiz">

@@ -47,12 +47,42 @@ function loadSettings() {
   }
 }
 
+const PROGRESS_KEY = "kidokezo-progress"
+
+type Progress = Record<string, { best: number; total: number }>
+
+function loadProgress(): Progress {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY)
+    if (!raw) return {}
+    const saved = JSON.parse(raw)
+    const clean: Progress = {}
+    for (const l of lessons) {
+      const p = saved[l.id]
+      if (
+        p &&
+        Number.isInteger(p.best) &&
+        Number.isInteger(p.total) &&
+        p.total > 0 &&
+        p.best >= 0 &&
+        p.best <= p.total
+      ) {
+        clean[l.id] = { best: p.best, total: p.total }
+      }
+    }
+    return clean
+  } catch {
+    return {}
+  }
+}
+
 function App() {
   const [initial] = useState(loadSettings)
   const [sizeIndex, setSizeIndex] = useState(initial.sizeIndex)
   const [theme, setTheme] = useState(initial.theme)
   const [speedIndex, setSpeedIndex] = useState(initial.speedIndex)
   const [lessonId, setLessonId] = useState<string | null>(null)
+  const [progress, setProgress] = useState(loadProgress)
 
   const lesson = lessons.find((l) => l.id === lessonId)
 
@@ -67,7 +97,7 @@ function App() {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
-  useEffect(() => {
+   useEffect(() => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
@@ -78,11 +108,35 @@ function App() {
     }
   }, [sizeIndex, theme, speedIndex])
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress))
+    } catch {
+      // storage unavailable: progress just won't be remembered
+    }
+  }, [progress])
+
+
   function resetSettings() {
     setSizeIndex(DEFAULTS.sizeIndex)
     setTheme(DEFAULTS.theme)
     setSpeedIndex(DEFAULTS.speedIndex)
   }
+
+  function recordScore(id: string, score: number, total: number) {
+  setProgress((prev) => ({
+    ...prev,
+    [id]: { best: Math.max(prev[id]?.best ?? 0, score), total },
+  }))
+}
+
+function clearProgress() {
+  if (window.confirm("Clear all lesson progress on this device?")) {
+    setProgress({})
+  }
+}
+
+const finishedCount = Object.keys(progress).length
 
   return (
     <main>
@@ -145,32 +199,45 @@ function App() {
         <button className="reset" onClick={resetSettings}>
           Reset settings
         </button>
+
+        <button className="reset" onClick={clearProgress}>
+  Clear my progress
+</button>
       </details>
 
       {lesson ? (
         <LessonView
-          key={lesson.id}
-          lesson={lesson}
-          rate={SPEEDS[speedIndex].rate}
-          onBack={() => setLessonId(null)}
-        />
+  key={lesson.id}
+  lesson={lesson}
+  rate={SPEEDS[speedIndex].rate}
+  onBack={() => setLessonId(null)}
+  onQuizFinish={(score) =>
+    recordScore(lesson.id, score, lesson.questions.length)
+  }
+/>
       ) : (
         <>
-          <h2>Choose a lesson</h2>
-          <ul className="lesson-list">
-            {lessons.map((l) => (
-              <li key={l.id}>
-                <button
-                  className="lesson-card"
-                  onClick={() => setLessonId(l.id)}
-                >
-                  <strong>{l.title}</strong>
-                  <span>{l.summary}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
+  <h2>Choose a lesson</h2>
+  <p className="progress">
+    {finishedCount} of {lessons.length} lessons finished
+  </p>
+  <ul className="lesson-list">
+    {lessons.map((l) => {
+      const p = progress[l.id]
+      return (
+        <li key={l.id}>
+          <button className="lesson-card" onClick={() => setLessonId(l.id)}>
+            <strong>{l.title}</strong>
+            <span>{l.summary}</span>
+            <span className="status">
+              {p ? `Best score: ${p.best} of ${p.total}` : "Not tried yet"}
+            </span>
+          </button>
+        </li>
+      )
+    })}
+  </ul>
+</>
       )}
     </main>
   )

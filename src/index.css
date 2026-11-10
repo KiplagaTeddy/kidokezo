@@ -178,3 +178,8 @@ button[aria-pressed="true"] {
   width: 100%;
 }
 
+.lesson-card .status {
+  font-weight: 600;
+  opacity: 1;
+}
+

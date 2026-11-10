@@ -6,6 +6,7 @@ type Props = {
   lesson: Lesson
   rate: number
   onBack: () => void
+  onQuizFinish: (score: number) => void
 }
 
 function splitSentences(text: string): string[] {
@@ -13,8 +14,7 @@ function splitSentences(text: string): string[] {
   return parts.map((s) => s.trim()).filter((s) => s.length > 0)
 }
 
-function LessonView({ lesson, rate, onBack }: Props) {
-  const [index, setIndex] = useState(0)
+function LessonView({ lesson, rate, onBack, onQuizFinish }: Props) {  const [index, setIndex] = useState(0)
   const [current, setCurrent] = useState<number | null>(null)
   const runId = useRef(0)
 
@@ -104,7 +104,9 @@ function LessonView({ lesson, rate, onBack }: Props) {
         </button>
       </div>
 
-      {index === total - 1 && <Quiz questions={lesson.questions} />}
+      {index === total - 1 && (
+  <Quiz questions={lesson.questions} onFinish={onQuizFinish} />
+)}
     </>
   )
 }
