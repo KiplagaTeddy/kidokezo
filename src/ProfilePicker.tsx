@@ -1,17 +1,16 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
-import { lessons } from "./lesson"
 import type { Profile } from "./storage"
 
-type Props = {
-  profiles: Profile[]
-  onChoose: (id: string) => void
-  onAdd: (name: string) => void
-  onDelete: (id: string) => void
-}
+   type Props = {
+     profiles: Profile[]
+     lessonIds: string[]
+     onChoose: (id: string) => void
+     onAdd: (name: string) => void
+     onDelete: (id: string) => void
+   }
 
-function ProfilePicker({ profiles, onChoose, onAdd, onDelete }: Props) {
-  const [adding, setAdding] = useState(profiles.length === 0)
+   function ProfilePicker({ profiles, lessonIds, onChoose, onAdd, onDelete }: Props) {  const [adding, setAdding] = useState(profiles.length === 0)
   const [name, setName] = useState("")
   const [error, setError] = useState("")
 
@@ -36,13 +35,13 @@ function ProfilePicker({ profiles, onChoose, onAdd, onDelete }: Props) {
       {profiles.length > 0 && (
         <ul className="lesson-list">
           {profiles.map((p) => {
-            const done = Object.keys(p.progress).length
+               const done = lessonIds.filter((id) => p.progress[id]).length
             return (
               <li key={p.id} className="profile-row">
                 <button className="lesson-card" onClick={() => onChoose(p.id)}>
                   <strong>{p.name}</strong>
                   <span className="status">
-                    {done} of {lessons.length} lessons finished
+                    {done} of {lessonIds.length} lessons finished
                   </span>
                 </button>
                 <button

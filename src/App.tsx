@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { lessons } from "./lesson"
+import LessonEditor from "./LessonEditor"
 import LessonView from "./LessonView"
 import ProfilePicker from "./ProfilePicker"
 import {
@@ -7,17 +8,23 @@ import {
   SIZES,
   SPEEDS,
   THEMES,
+  loadCustomLessons,
   loadProfiles,
   newId,
+  saveCustomLessons,
   saveProfiles,
 } from "./storage"
+import type { Lesson } from "./lesson"
 import type { Profile, Settings } from "./storage"
 
 function App() {
   const [profiles, setProfiles] = useState(loadProfiles)
+  const [customLessons, setCustomLessons] = useState(loadCustomLessons)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [lessonId, setLessonId] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
 
+  const allLessons: Lesson[] = [...lessons, ...customLessons]
   const active = profiles.find((p) => p.id === activeId)
   const settings = active ? active.settings : DEFAULT_SETTINGS
 
@@ -35,6 +42,10 @@ function App() {
   useEffect(() => {
     saveProfiles(profiles)
   }, [profiles])
+
+  useEffect(() => {
+    saveCustomLessons(customLessons)
+  }, [customLessons])
 
   function addProfile(name: string) {
     const profile: Profile = {
@@ -57,6 +68,7 @@ function App() {
         <h1>Kidokezo</h1>
         <ProfilePicker
           profiles={profiles}
+          lessonIds={allLessons.map((l) => l.id)}
           onChoose={setActiveId}
           onAdd={addProfile}
           onDelete={deleteProfile}
@@ -65,8 +77,8 @@ function App() {
     )
   }
 
-  const lesson = lessons.find((l) => l.id === lessonId)
-  const finishedCount = Object.keys(active.progress).length
+  const lesson = allLessons.find((l) => l.id === lessonId)
+  const finishedCount = allLessons.filter((l) => active.progress[l.id]).length
 
   function updateActive(change: (p: Profile) => Profile) {
     setProfiles((prev) => prev.map((p) => (p.id === activeId ? change(p) : p)))
@@ -92,8 +104,17 @@ function App() {
     }
   }
 
+  function addLesson(newLesson: Lesson) {
+    setCustomLessons((prev) => [...prev, newLesson])
+  }
+
+  function deleteLesson(id: string) {
+    setCustomLessons((prev) => prev.filter((l) => l.id !== id))
+  }
+
   function switchLearner() {
     setLessonId(null)
+    setEditing(false)
     setActiveId(null)
   }
 
@@ -182,7 +203,14 @@ function App() {
         </button>
       </details>
 
-      {lesson ? (
+      {editing ? (
+        <LessonEditor
+          customLessons={customLessons}
+          onAdd={addLesson}
+          onDelete={deleteLesson}
+          onDone={() => setEditing(false)}
+        />
+      ) : lesson ? (
         <LessonView
           key={lesson.id}
           lesson={lesson}
@@ -196,10 +224,10 @@ function App() {
         <>
           <h2>Choose a lesson</h2>
           <p className="progress">
-            {finishedCount} of {lessons.length} lessons finished
+            {finishedCount} of {allLessons.length} lessons finished
           </p>
           <ul className="lesson-list">
-            {lessons.map((l) => {
+            {allLessons.map((l) => {
               const p = active.progress[l.id]
               return (
                 <li key={l.id}>
@@ -219,6 +247,9 @@ function App() {
               )
             })}
           </ul>
+          <button className="reset" onClick={() => setEditing(true)}>
+            Add or manage lessons
+          </button>
         </>
       )}
     </main>

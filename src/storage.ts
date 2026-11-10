@@ -1,5 +1,4 @@
-import { lessons } from "./lesson"
-
+import type { Lesson } from "./lesson"
 export const SIZES = [1.1, 1.25, 1.5, 1.75, 2]
 
 export const SPEEDS = [
@@ -66,8 +65,8 @@ function cleanSettings(saved: unknown): Settings {
 function cleanProgress(saved: unknown): Progress {
   const source = (saved ?? {}) as Record<string, { best?: number; total?: number }>
   const clean: Progress = {}
-  for (const l of lessons) {
-    const p = source[l.id]
+  for (const id of Object.keys(source)) {
+    const p = source[id]
     if (
       p &&
       Number.isInteger(p.best) &&
@@ -76,11 +75,12 @@ function cleanProgress(saved: unknown): Progress {
       (p.best as number) >= 0 &&
       (p.best as number) <= (p.total as number)
     ) {
-      clean[l.id] = { best: p.best as number, total: p.total as number }
+      clean[id] = { best: p.best as number, total: p.total as number }
     }
   }
   return clean
 }
+
 
 export function newId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
@@ -122,5 +122,54 @@ export function saveProfiles(profiles: Profile[]) {
     localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles))
   } catch {
     // storage unavailable: profiles just won't be remembered
+  }
+}
+
+const LESSONS_KEY = "kidokezo-custom-lessons"
+
+function isLesson(value: unknown): value is Lesson {
+  const l = value as Lesson | null
+  return (
+    !!l &&
+    typeof l.id === "string" &&
+    typeof l.title === "string" &&
+    typeof l.summary === "string" &&
+    Array.isArray(l.sections) &&
+    l.sections.length > 0 &&
+    l.sections.every(
+      (s) =>
+        s &&
+        typeof s.id === "number" &&
+        typeof s.title === "string" &&
+        typeof s.text === "string"
+    ) &&
+    Array.isArray(l.questions) &&
+    l.questions.length > 0 &&
+    l.questions.every(
+      (q) =>
+        q &&
+        typeof q.id === "number" &&
+        typeof q.question === "string" &&
+        typeof q.explanation === "string" &&
+        Array.isArray(q.options) &&
+        q.options.length >= 2 &&
+        q.options.every((o) => typeof o === "string") &&
+        Number.isInteger(q.answer) &&
+        q.answer >= 0 &&
+        q.answer < q.options.length
+    )
+  )
+}
+
+export function loadCustomLessons(): Lesson[] {
+  const saved = readJSON(LESSONS_KEY)
+  return Array.isArray(saved) ? saved.filter(isLesson) : []
+}
+
+export function saveCustomLessons(list: Lesson[]) {
+  try {
+    localStorage.setItem(LESSONS_KEY, JSON.stringify(list))
+  } catch {
+    // storage unavailable: lessons just won't be remembered
   }
 }
