@@ -1,0 +1,180 @@
+:root {
+  --bg: #ffffff;
+  --text: #1a1a1a;
+  --focus: #1a5fb4;
+  --font-size: 1.25rem;
+  --line-height: 1.7;
+  --highlight: #ffe066;
+  --highlight-text: #1a1a1a;
+}
+
+:root[data-theme="dark"] {
+  --bg: #121212;
+  --text: #f2f2f2;
+  --focus: #7ab8ff;
+  --highlight: #1f4e8c;
+  --highlight-text: #ffffff;
+}
+
+:root[data-theme="contrast"] {
+  --bg: #000000;
+  --text: #ffff00;
+  --focus: #ffffff;
+  --highlight: #ffff00;
+  --highlight-text: #000000;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.progress {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+button {
+  flex: 1;
+  min-height: 3.5rem;
+  font-size: 1.25rem;
+  border: 2px solid var(--text);
+  border-radius: 0.75rem;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button[aria-disabled="true"] {
+  opacity: 0.4;
+}
+
+button:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.settings {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+button[aria-pressed="true"] {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.settings {
+  flex-wrap: wrap;
+}
+
+.reading {
+  background: var(--highlight);
+  color: var(--highlight-text);
+  border-radius: 0.25rem;
+}
+
+.listen {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.settings-panel {
+  margin-bottom: 1rem;
+}
+
+.settings-panel summary {
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  border: 2px solid var(--text);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.settings-panel summary:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.settings-panel[open] summary {
+  margin-bottom: 1rem;
+}
+
+.reset {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.quiz {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--text);
+}
+
+.quiz fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.quiz legend {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--text);
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+
+.option input {
+  width: 1.5rem;
+  height: 1.5rem;
+  accent-color: var(--text);
+}
+
+.option:has(input:checked) {
+  background: var(--highlight);
+  color: var(--highlight-text);
+}
+
+.option:has(input:focus-visible) {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.feedback {
+  font-weight: 600;
+  min-height: 3rem;
+}
+
+.quiz > button {
+  width: 100%;
+}
+
