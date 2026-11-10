@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react"
-import { photosynthesis } from "./lesson"
-import Quiz from "./quiz"
+import { useEffect, useState } from "react"
+import { lessons } from "./lesson"
+import LessonView from "./LessonView"
 
 const SIZES = [1.1, 1.25, 1.5, 1.75, 2]
 
@@ -47,21 +47,14 @@ function loadSettings() {
   }
 }
 
-function splitSentences(text: string): string[] {
-  const parts = text.match(/[^.!?]+[.!?]*/g) ?? [text]
-  return parts.map((s) => s.trim()).filter((s) => s.length > 0)
-}
-
 function App() {
   const [initial] = useState(loadSettings)
-  const [index, setIndex] = useState(0)
   const [sizeIndex, setSizeIndex] = useState(initial.sizeIndex)
   const [theme, setTheme] = useState(initial.theme)
   const [speedIndex, setSpeedIndex] = useState(initial.speedIndex)
-  const [current, setCurrent] = useState<number | null>(null)
-  const runId = useRef(0)
+  const [lessonId, setLessonId] = useState<string | null>(null)
 
-  const supported = "speechSynthesis" in window
+  const lesson = lessons.find((l) => l.id === lessonId)
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -85,59 +78,15 @@ function App() {
     }
   }, [sizeIndex, theme, speedIndex])
 
-  useEffect(() => {
-    return () => {
-      window.speechSynthesis.cancel()
-    }
-  }, [])
-
-  const total = photosynthesis.sections.length
-  const section = photosynthesis.sections[index]
-  const sentences = splitSentences(section.text)
-
-  function stop() {
-    runId.current++
-    window.speechSynthesis.cancel()
-    setCurrent(null)
-  }
-
-  function listen() {
-    window.speechSynthesis.cancel()
-    const id = ++runId.current
-
-    const next = (i: number) => {
-      if (id !== runId.current) return
-      if (i >= sentences.length) {
-        setCurrent(null)
-        return
-      }
-      setCurrent(i)
-      const utterance = new SpeechSynthesisUtterance(sentences[i])
-      utterance.rate = SPEEDS[speedIndex].rate
-      utterance.onend = () => next(i + 1)
-      window.speechSynthesis.speak(utterance)
-    }
-
-    next(0)
-  }
-
-  function goTo(i: number) {
-    if (i < 0 || i >= total) return
-    stop()
-    setIndex(i)
-  }
-
   function resetSettings() {
     setSizeIndex(DEFAULTS.sizeIndex)
     setTheme(DEFAULTS.theme)
     setSpeedIndex(DEFAULTS.speedIndex)
   }
 
-  const isReading = current !== null
-
   return (
     <main>
-      <h1>{photosynthesis.title}</h1>
+      <h1>Kidokezo</h1>
 
       <details className="settings-panel">
         <summary>Settings</summary>
@@ -198,39 +147,31 @@ function App() {
         </button>
       </details>
 
-      <p className="progress">
-        Section {index + 1} of {total}
-      </p>
-
-      {supported && (
-        <button className="listen" onClick={isReading ? stop : listen}>
-          {isReading ? "Stop" : "Listen"}
-        </button>
+      {lesson ? (
+        <LessonView
+          key={lesson.id}
+          lesson={lesson}
+          rate={SPEEDS[speedIndex].rate}
+          onBack={() => setLessonId(null)}
+        />
+      ) : (
+        <>
+          <h2>Choose a lesson</h2>
+          <ul className="lesson-list">
+            {lessons.map((l) => (
+              <li key={l.id}>
+                <button
+                  className="lesson-card"
+                  onClick={() => setLessonId(l.id)}
+                >
+                  <strong>{l.title}</strong>
+                  <span>{l.summary}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
-
-      <section aria-live="polite">
-        <h2>{section.title}</h2>
-        <p>
-          {sentences.map((s, i) => (
-            <span key={i} className={i === current ? "reading" : undefined}>
-              {s}{" "}
-            </span>
-          ))}
-        </p>
-      </section>
-
-      <div className="nav">
-        <button onClick={() => goTo(index - 1)} aria-disabled={index === 0}>
-          Back
-        </button>
-        <button
-          onClick={() => goTo(index + 1)}
-          aria-disabled={index === total - 1}
-        >
-          Next
-        </button>
-      </div>
-            {index === total - 1 && <Quiz questions={photosynthesis.questions} />}
     </main>
   )
 }
