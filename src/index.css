@@ -183,3 +183,47 @@ button[aria-pressed="true"] {
   opacity: 1;
 }
 
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0 1rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid var(--text);
+  border-radius: 0.75rem;
+}
+
+input:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.profile-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.profile-row .lesson-card {
+  flex: 1;
+}
+
+.profile-row .delete {
+  flex: 0 0 auto;
+  padding: 0 1rem;
+}
+
+.form-error {
+  font-weight: 600;
+  min-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+
