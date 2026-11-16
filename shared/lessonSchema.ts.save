@@ -1,0 +1,6 @@
+node -e 'import("./shared/lessonSchema.ts").then(async ({validateLesson})=>{const {lessons}=await import("./src/lesson.ts"); for(const l of lessons) console.log(l.id, validateLesson(l).ok); console.log(validateLesson({id:"x"})); console.log(validateLesson({...lessons[0], title:"x".repeat(500)}))})'
+
+
+
+
+
